@@ -14,6 +14,17 @@ branches () {
   git rev-parse --abbrev-ref HEAD
   git branch -r | grep 'origin/.*\<release\>' || true
   git tag | grep '\<v[0-9]\+\>' || true
+
+  # In our fork, accept the explicitly listed development dependency branches.
+  # This verifies fork provenance; it does not claim an upstream release.
+  if [[ "${GITHUB_REPOSITORY_OWNER:-}" == "colll78" ]]; then
+    while read -r fork_location fork_branch; do
+      if [[ "$location" == "$fork_location" ]] &&
+         git show-ref --verify --quiet "refs/remotes/origin/$fork_branch"; then
+        printf 'origin/%s\n' "$fork_branch"
+      fi
+    done < "$base/.github/fork-development-dependencies.list"
+  fi
 }
 
 commits () {
@@ -46,7 +57,7 @@ for row in $(cat tmp/repositories.json | jq -r '.[] | @base64'); do
     branches > branches.txt
 
     commits branches.txt | grep "$tag" || (
-      printf "Commit $tag from $location is not on the main branch or any release branches\n" >> "$base/tmp/dep-repo-result"
+      printf "Commit $tag from $location is not on the default, release, or explicitly allowed fork development branches\n" >> "$base/tmp/dep-repo-result"
       printf "Branches searched:"
       cat branches.txt | sed 's|^|  |g'
     )
