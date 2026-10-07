@@ -1,3 +1,7 @@
+# Unreleased 2.18.0.1
+
+- Update API, CLI and diffusion bounds for the Dijkstra Receiving source proposals. Use the current public era-dispatch API for node era queries.
+
 # ChangeLog
 
 ## 2.18 -- Sep 2026
